@@ -42,7 +42,7 @@ file "build.properties" withReader {
 }
 
 
-version = "1.19-SNAPSHOT"
+version = "1.19.0"
 group = "idealindustrial"
 archivesBaseName = "gt-ii-edition"
 
