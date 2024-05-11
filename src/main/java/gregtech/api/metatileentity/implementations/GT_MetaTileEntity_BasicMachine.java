@@ -543,7 +543,7 @@ public abstract class GT_MetaTileEntity_BasicMachine extends GT_MetaTileEntity_B
                     if (tDrained != null) {
                         int tFilledAmount = tTank.fill(ForgeDirection.getOrientation(GT_Utility.getOppositeSide(aBaseMetaTileEntity.getFluidFacing())), tDrained, false);
                         if (tFilledAmount > 0)
-                            tTank.fill(ForgeDirection.getOrientation(aBaseMetaTileEntity.getFluidFacing()), drain(tFilledAmount, true), true);
+                            tTank.fill(ForgeDirection.getOrientation(GT_Utility.getOppositeSide(aBaseMetaTileEntity.getFluidFacing())), drain(tFilledAmount, true), true);
                     }
                 }
                 if (getDrainableStack() == null) tRemovedOutputFluid = true;
