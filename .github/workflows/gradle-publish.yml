@@ -10,7 +10,7 @@ name: Publish Package
 on:
   push:
     branches:
-      - test-build/1-19-0
+      - IIA-dev
 
 permissions: write-all
 
