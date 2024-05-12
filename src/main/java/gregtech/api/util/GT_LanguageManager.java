@@ -40,7 +40,9 @@ public class GT_LanguageManager {
 		*/
 		String translate = LanguageRegistry.instance().getStringLocalization(aKey);
 		if(!translate.isEmpty()) return translate;
-		LanguageRegistry.instance().addStringLocalization(aKey, "en_US", aEnglish);
+                if (aWriteIntoLangFile){
+                    LanguageRegistry.instance().addStringLocalization(aKey, "en_US", aEnglish);
+                }
 		return aEnglish;
 		//TODO LuxinfineTeam code END
     }
