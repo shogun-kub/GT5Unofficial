@@ -196,8 +196,9 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
             Block aBlock = aWorld.getBlock(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ);
             int tMeta = aWorld.getBlockMetadata(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ);
             if (aBlock != Blocks.air) {
-                if (Blocks.bedrock.equals(aBlock) || oreVienHeight < 0) {
+                if (Blocks.bedrock.equals(aBlock) || oreVienHeight <= 0 || isNextLayerContainsOre(aBaseMetaTileEntity)) {
                     meetNotHarvestableLayer = true;
+                    break;
                 } else if (foundOre(aBlock, aWorld, pos, tMeta)) {
                     foundOre = true;
                 }
@@ -211,7 +212,6 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
                 oreVienHeight--;
             }
             digHole(aBaseMetaTileEntity);
-            //checkVisibleOres(aBaseMetaTileEntity);
         } else {
             if (torchIdx > -1 && aBaseMetaTileEntity.isServerSide()) {
                 setTorches(aBaseMetaTileEntity);
@@ -272,9 +272,10 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
                 aBaseMetaTileEntity.getXCoord(), aBaseMetaTileEntity.getYCoord(), aBaseMetaTileEntity.getZCoord());
     }
 
+    @Override
     public void doWorkSound(IGregTechTileEntity aBaseMetaTileEntity, boolean isSuccess) {
         GT_Utility.sendSoundToPlayers(aBaseMetaTileEntity.getWorld(),
-                (String) GregTech_API.sSoundList.get(Integer.valueOf(isSuccess ? 101 : 6)), isSuccess ? 1.0f : 0.8f, -1.0F,
+                (String) GregTech_API.sSoundList.get(isSuccess ? 101 : 6), isSuccess ? 1.0f : 0.8f, -1.0F,
                 aBaseMetaTileEntity.getXCoord(), aBaseMetaTileEntity.getYCoord(), aBaseMetaTileEntity.getZCoord());
     }
 
@@ -301,7 +302,6 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
     private Block getTrashBlock(IGregTechTileEntity te, boolean isNextToTop) {
         Block aBlock = null;
         int[] idxes = new int[]{-1, -1, -1, -1, -1};
-        boolean isPriorityGrass = true;
         int maxPriorityIdx = -1;
         for (int i = 27; i >= 0; i--) {
             ItemStack its = mInventory[i];
@@ -323,7 +323,7 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
             }
         }
         if (isNextToTop && (idxes[0] > -1 || idxes[1] > -1)) {
-            isPriorityGrass = checkIsPriorityGrass(te) && idxes[0] > -1;
+            boolean isPriorityGrass = checkIsPriorityGrass(te) && idxes[0] > -1;
             maxPriorityIdx = isPriorityGrass ? idxes[0] : idxes[1];
         } else if (idxes[2] > -1) {
             maxPriorityIdx = idxes[2];
@@ -378,26 +378,24 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
         return success;
     }
 
-    
-    //check blocks next to digged ones to ensure the ore block is visible
-    private void checkVisibleOres(IGregTechTileEntity te) {
+    /**
+     * Check blocks for Ore
+     *
+     * @param te
+     * @return
+     */
+    private boolean isNextLayerContainsOre(IGregTechTileEntity te) {
         List<ChunkPosition> blocksToCheck = new ArrayList<>();
-        blocksToCheck.add(GT_Utility.getFrontRelativeOffset(te, RelativeOffset.FORWARD, 1, digHeight));
-        blocksToCheck.add(GT_Utility.getFrontRelativeOffset(te, RelativeOffset.FORWARD, 2, digHeight));
-        for (ChunkPosition pos : blocksToCheck) {
-            List<ChunkPosition> nextBlocks = new ArrayList<>();
-            nextBlocks.add(new ChunkPosition(pos.chunkPosX - 1, pos.chunkPosY, pos.chunkPosZ));
-            nextBlocks.add(new ChunkPosition(pos.chunkPosX + 1, pos.chunkPosY, pos.chunkPosZ));
-            nextBlocks.add(new ChunkPosition(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ - 1));
-            nextBlocks.add(new ChunkPosition(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ + 1));
-            for (ChunkPosition nextBlock : nextBlocks) {
-                Block aBlock = te.getWorld().getBlock(nextBlock.chunkPosX, nextBlock.chunkPosY, nextBlock.chunkPosZ);
-                if (foundOre(aBlock, te.getWorld(), nextBlock, mEUt)) {
-                    meetNotHarvestableLayer = true;
-                    return;
-                }
+        blocksToCheck.add(GT_Utility.getFrontRelativeOffset(te, RelativeOffset.FORWARD, 0, digHeight - 1));
+        blocksToCheck.add(GT_Utility.getFrontRelativeOffset(te, RelativeOffset.FORWARD, 1, digHeight - 1));
+        for (ChunkPosition blockToCheck : blocksToCheck) {
+            Block aBlock = te.getWorld().getBlock(blockToCheck.chunkPosX, blockToCheck.chunkPosY, blockToCheck.chunkPosZ);
+            int tMeta = te.getWorld().getBlockMetadata(blockToCheck.chunkPosX, blockToCheck.chunkPosY, blockToCheck.chunkPosZ);
+            if (foundOre(aBlock, te.getWorld(), blockToCheck, tMeta)) {
+                return true;
             }
         }
+        return false;
     }
 
     public void digHole(IGregTechTileEntity te) {
@@ -409,7 +407,7 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
         for (ChunkPosition pos : blocksPosToCheck) {
             Block aBlock = aWorld.getBlock(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ);
             int tMeta = aWorld.getBlockMetadata(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ);
-            if (aBlock != Blocks.air) {
+            if (aBlock != Blocks.air && !foundOre(aBlock, aWorld, pos, tMeta)) {
                 layerDrop.addAll(aBlock.getDrops(getBaseMetaTileEntity().getWorld(), pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ, tMeta, 1));
                 aWorld.setBlockToAir(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ);
             }
@@ -442,6 +440,7 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
         return isLadder ? 4 : 1;
     }
 
+    @Override
     public boolean isReadyToDig() {
         if (finalStop) {
             return false;
