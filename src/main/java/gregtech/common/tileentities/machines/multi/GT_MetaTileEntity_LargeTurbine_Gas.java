@@ -149,10 +149,9 @@ public class GT_MetaTileEntity_LargeTurbine_Gas extends GT_MetaTileEntity_LargeT
             float fuelOverload = 0;
             if(mEfficiency >= 10000) {
                 fuelOverload = (mEfficiency - 10000) / 5000f;
-                oxygenConsume = Math.max(1, (int)(mEUt / oxygenFactor)); //oxygen consumption from base eff
+                oxygenConsume = Math.max(1, (int)(mEUt / 2 * oxygenFactor)); //base eu/t = mEUt/2
                 if(mEfficiency < 12550) {
-                    float overload = 0;
-                    overload = (float)Math.sqrt(fuelOverload);
+                    float overload = (float)Math.sqrt(fuelOverload);
                     oxygenConsume *= overload;
                 }
                 oxygenConsume = Math.max(1, oxygenConsume);
