@@ -9,7 +9,7 @@ buildscript {
         maven {
             // GTNH ForgeGradle Fork
             name = "GTNH Maven"
-            url = "http://jenkins.usrv.eu:8081/nexus/content/groups/public/"
+            url = "https://nexus.gtnewhorizons.com/repository/public/"
         }
         maven {
             name 'sonatype'
@@ -21,7 +21,7 @@ buildscript {
         }
     }
     dependencies {
-         classpath 'net.minecraftforge.gradle:ForgeGradle:1.2.11'
+         classpath 'net.minecraftforge.gradle:ForgeGradle:1.2.13'
     }
 }
 
@@ -42,7 +42,7 @@ file "build.properties" withReader {
 }
 
 
-version = "1.19.1-SNAPSHOT"
+version = "1.19.2b-SNAPSHOT"
 group = "idealindustrial"
 archivesBaseName = "gt-ii-edition"
 

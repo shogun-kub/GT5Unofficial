@@ -246,4 +246,9 @@ public class GT_MetaTileEntity_PrimitiveMuscleMachine extends GT_MetaTileEntity_
     public int getPollutionPerTick(ItemStack aStack) {
         return 0;
     }
+
+    @Override
+    public boolean isValidSlot(int aIndex) {
+        return aIndex > 0 && aIndex != OTHER_SLOT_COUNT + mInputSlotCount + mOutputItems.length;
+    }
 }
