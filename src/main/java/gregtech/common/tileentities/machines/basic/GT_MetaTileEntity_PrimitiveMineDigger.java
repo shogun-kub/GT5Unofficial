@@ -79,12 +79,12 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
 
     @Override
     public int getDamagePerOperation() {
-        return 10;
+        return 12;
     }
 
     @Override
     public int getProgresstimePerOre() {
-        return isPickupLadders ? 2 : 10;
+        return isPickupLadders ? 5 : 20;
     }
 
     @Override
