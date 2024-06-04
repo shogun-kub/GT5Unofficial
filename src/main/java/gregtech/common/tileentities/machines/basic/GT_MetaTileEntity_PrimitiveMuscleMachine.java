@@ -77,6 +77,7 @@ public class GT_MetaTileEntity_PrimitiveMuscleMachine extends GT_MetaTileEntity_
 
     @Override
     public void onPostTick(IGregTechTileEntity aBaseMetaTileEntity, long aTick) {
+        //what is bullshit is going on here???
         if (aBaseMetaTileEntity.isServerSide()) {
             if (aBaseMetaTileEntity.hasInventoryBeenModified() && getProgresstime() < 0) {
                 resetProgress();

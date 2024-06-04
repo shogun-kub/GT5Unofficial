@@ -110,10 +110,10 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
             "Required items: Primitive Drill, Ladder, Cobblestone",
             "Optional are torches (will be placed on dig finish)",
             "To start pickup torches and ladders you have to remove",
-            "all items from inputs except cobblestone, to fill hole",
-            "Digger will stop if found an ore vein or bedrock block",
+            "all items from inputs except cobblestone, to fill holes",
+            "Digger will stop if found an ore vein in a 3x3 radius or bedrock block",
             "Working speed depends on stored energy",
-            "Required a lot of muscle power - you will be hungry"
+            "Required a lot of muscle power - you will be hungry!"
         };
     }
 
@@ -146,7 +146,7 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
                 }
             }
         }
-        if (ladderIdx == -1 || cobblestoneIdx == -1) {
+        if (ladderIdx == -1) {
             isValid = false;
         }
         return isValid;
@@ -355,11 +355,12 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
         for (ChunkPosition pos : blocksPosToCheck) {
             Block aBlock = aWorld.getBlock(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ);
             int tMeta = aWorld.getBlockMetadata(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ);
-            if (aBlock != Blocks.air) {
-                layerDrop.addAll(aBlock.getDrops(getBaseMetaTileEntity().getWorld(), pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ, tMeta, 1));
-            }
+
             Block aBlockToPut = getTrashBlock(te, isNextToTop);
             if (aBlockToPut != null) {
+                if (aBlock != Blocks.air) {
+                    layerDrop.addAll(aBlock.getDrops(getBaseMetaTileEntity().getWorld(), pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ, tMeta, 1));
+                }
                 aWorld.setBlock(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ, aBlockToPut);
             } else {
                 success = false;
@@ -415,15 +416,21 @@ public class GT_MetaTileEntity_PrimitiveMineDigger extends GT_MetaTileEntity_Pri
         if (!layerDrop.isEmpty()) {
             pushToOutputSlots(layerDrop);
         }
+        //block for ladder
         ChunkPosition chPos = GT_Utility.getFrontRelativeOffset(te, RelativeOffset.FORWARD, 2, digHeight);
+        boolean stabilized = true;
         if (isUnstableBlock(aWorld.getBlock(chPos.chunkPosX, chPos.chunkPosY, chPos.chunkPosZ))) {
-            if (decreaseInventoryItem(cobblestoneIdx)) {
+            stabilized = decreaseInventoryItem(cobblestoneIdx);
+            if (stabilized) {
                 aWorld.setBlock(chPos.chunkPosX, chPos.chunkPosY, chPos.chunkPosZ, Blocks.cobblestone);
             }
         }
-        chPos = GT_Utility.getFrontRelativeOffset(te, RelativeOffset.FORWARD, 1, digHeight);
-        if (decreaseInventoryItem(ladderIdx)) {
-            aWorld.setBlock(chPos.chunkPosX, chPos.chunkPosY, chPos.chunkPosZ, Blocks.ladder, getTorchLadderMetaByFrontSize(te, true), 3);
+        //ladder
+        if (stabilized) {
+            chPos = GT_Utility.getFrontRelativeOffset(te, RelativeOffset.FORWARD, 1, digHeight);
+            if (decreaseInventoryItem(ladderIdx)) {
+                aWorld.setBlock(chPos.chunkPosX, chPos.chunkPosY, chPos.chunkPosZ, Blocks.ladder, getTorchLadderMetaByFrontSize(te, true), 3);
+            }
         }
     }
 
