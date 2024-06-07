@@ -22,7 +22,7 @@ import org.lwjgl.opengl.GL11;
 
 public class GT_MetaGenerated_Item_Renderer implements IItemRenderer {
     
-    private static boolean renderMaterialsIconTextEnabled = GregTech_API.sMaterialProperties.get("general", "MaterialIconTextEnable", true);
+    private static final boolean renderMaterialsIconTextEnabled = GregTech_API.sMaterialProperties.get("general", "MaterialIconTextEnable", true);
 
     public GT_MetaGenerated_Item_Renderer() {
         GT_MetaGenerated_Item tItem;
@@ -170,7 +170,7 @@ public class GT_MetaGenerated_Item_Renderer implements IItemRenderer {
             GL11.glTranslatef(0, 0, 0.01f);
             GL11.glScalef(0.7F, 0.7F, 0.7F);
             FontRenderer fnt = Minecraft.getMinecraft().fontRenderer;
-            fnt.drawString(boldFlag + text, 8, 0, ColorUtil.getRGBA(1, 1, 1, 0));
+            fnt.drawString(boldFlag + text, 10, 0, ColorUtil.getRGBA(1, 1, 1, 0));
         }
     }
 }
