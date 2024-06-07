@@ -21,6 +21,8 @@ import net.minecraftforge.fluids.FluidStack;
 import org.lwjgl.opengl.GL11;
 
 public class GT_MetaGenerated_Item_Renderer implements IItemRenderer {
+    
+    private static boolean renderMaterialsIconTextEnabled = GregTech_API.sMaterialProperties.get("general", "MaterialIconTextEnable", true);
 
     public GT_MetaGenerated_Item_Renderer() {
         GT_MetaGenerated_Item tItem;
@@ -154,6 +156,9 @@ public class GT_MetaGenerated_Item_Renderer implements IItemRenderer {
         }
         GL11.glDisable(3042);
         //render Material info for icons
+        if (!renderMaterialsIconTextEnabled){
+            return;
+        }
         if (aStack.getIconIndex().getIconName().contains("materialicons")) {
             String boldFlag = "§l";
             Materials tMaterial = GregTech_API.sGeneratedMaterials[aStack.getItem().getDamage(aStack) % 1000];
