@@ -156,7 +156,7 @@ public class GT_MetaGenerated_Item_Renderer implements IItemRenderer {
         }
         GL11.glDisable(3042);
         //render Material info for icons
-        if (!renderMaterialsIconTextEnabled){
+        if (!renderMaterialsIconTextEnabled || !type.equals(IItemRenderer.ItemRenderType.INVENTORY)){
             return;
         }
         if (aStack.getIconIndex().getIconName().contains("materialicons")) {
