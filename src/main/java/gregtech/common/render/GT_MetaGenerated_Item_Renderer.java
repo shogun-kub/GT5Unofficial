@@ -1,11 +1,11 @@
 package gregtech.common.render;
 
-import com.enderio.core.client.render.ColorUtil;
 import gregtech.api.GregTech_API;
 import gregtech.api.enums.Materials;
 import gregtech.api.interfaces.IIconContainer;
 import gregtech.api.items.GT_MetaGenerated_Item;
 import gregtech.api.util.GT_Utility;
+import java.awt.Color;
 import java.util.Iterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -23,12 +23,18 @@ import org.lwjgl.opengl.GL11;
 public class GT_MetaGenerated_Item_Renderer implements IItemRenderer {
     
     private static final boolean renderMaterialsIconTextEnabled = GregTech_API.sMaterialProperties.get("general", "MaterialIconTextEnable", true);
+    private static final int renderMaterialsIconTextColor = parseColor(GregTech_API.sMaterialProperties.get("general", "MaterialIconTextColor", "0,0,0"));
 
     public GT_MetaGenerated_Item_Renderer() {
         GT_MetaGenerated_Item tItem;
         for (Iterator i$ = GT_MetaGenerated_Item.sInstances.values().iterator(); i$.hasNext(); MinecraftForgeClient.registerItemRenderer(tItem, this)) {
             tItem = (GT_MetaGenerated_Item) i$.next();
         }
+    }
+    
+    private static int parseColor(String rgb){
+        String[] c = rgb.split(",");
+        return new Color(Integer.parseInt(c[0]), Integer.parseInt(c[1]), Integer.parseInt(c[2])).getRGB();
     }
 
     @Override
@@ -170,7 +176,7 @@ public class GT_MetaGenerated_Item_Renderer implements IItemRenderer {
             GL11.glTranslatef(0, 0, 0.01f);
             GL11.glScalef(0.7F, 0.7F, 0.7F);
             FontRenderer fnt = Minecraft.getMinecraft().fontRenderer;
-            fnt.drawString(boldFlag + text, 10, 0, ColorUtil.getRGBA(1, 1, 1, 0));
+            fnt.drawString(boldFlag + text, 10, 0, renderMaterialsIconTextColor);
         }
     }
 }
