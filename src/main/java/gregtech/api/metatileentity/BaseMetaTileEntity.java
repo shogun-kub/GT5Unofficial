@@ -1,6 +1,5 @@
 package gregtech.api.metatileentity;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import gregtech.GT_Mod;
@@ -18,9 +17,21 @@ import gregtech.api.net.GT_Packet_Key;
 import gregtech.api.net.GT_Packet_TileEntity;
 import gregtech.api.objects.GT_ItemStack;
 import gregtech.api.objects.GT_RenderedTexture;
-import gregtech.api.util.*;
+import gregtech.api.util.GT_CoverBehavior;
+import gregtech.api.util.GT_Log;
+import gregtech.api.util.GT_ModHandler;
+import gregtech.api.util.GT_OreDictUnificator;
+import gregtech.api.util.GT_Recipe;
+import gregtech.api.util.GT_Utility;
 import gregtech.common.GT_Pollution;
 import ic2.api.Direction;
+import ic2.core.item.ItemFluidCell;
+import ic2.core.item.resources.ItemCell;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFire;
 import net.minecraft.entity.Entity;
@@ -36,6 +47,7 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -43,15 +55,8 @@ import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidBlock;
 import org.lwjgl.input.Keyboard;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-
 import static gregtech.api.enums.GT_Values.NW;
 import static gregtech.api.enums.GT_Values.V;
-import net.minecraft.world.biome.BiomeGenBase;
 
 /**
  * NEVER INCLUDE THIS FILE IN YOUR MOD!!!
@@ -758,7 +763,7 @@ public class BaseMetaTileEntity extends BaseTileEntity implements IGregTechTileE
     }
 
     public ArrayList<String> getDebugInfo(EntityPlayer aPlayer, int aLogLevel) {
-        ArrayList<String> tList = new ArrayList<String>();
+        ArrayList<String> tList = new ArrayList<>();
         if (aLogLevel > 2) {
             tList.add("Meta-ID: " + mID + (canAccessData() ? " valid" : " invalid") + (mMetaTileEntity == null ? " MetaTileEntity == null!" : " "));
         }
@@ -1479,7 +1484,7 @@ public class BaseMetaTileEntity extends BaseTileEntity implements IGregTechTileE
         }
         if (hasValidMetaTileEntity()) mMetaTileEntity.setItemNBT(tNBT);
         if (!tNBT.hasNoTags()) rStack.setTagCompound(tNBT);
-        return new ArrayList<ItemStack>(Arrays.asList(rStack));
+        return new ArrayList<>(Arrays.asList(rStack));
     }
 
     public int getUpgradeCount() {
@@ -1598,6 +1603,10 @@ public class BaseMetaTileEntity extends BaseTileEntity implements IGregTechTileE
                             }
                             return true;
                         }
+                    } 
+                    if (tCurrentItem.getItem() instanceof ItemCell || tCurrentItem.getItem() instanceof ItemFluidCell){
+                        aSide = (getCoverIDAtSide(aSide) == 0) ? GT_Utility.determineWrenchingSide(aSide, aX, aY, aZ) : aSide;
+                        return getCoverIDAtSide(aSide) > 0 && getCoverBehaviorAtSide(aSide).onCoverRightclick(aSide, getCoverIDAtSide(aSide), getCoverDataAtSide(aSide), this, aPlayer, aX, aY, aZ);
                     }
                 } else if (aPlayer.isSneaking()) { //Sneak click, no tool -> open cover config if possible.
                     aSide = (getCoverIDAtSide(aSide) == 0) ? GT_Utility.determineWrenchingSide(aSide, aX, aY, aZ) : aSide;

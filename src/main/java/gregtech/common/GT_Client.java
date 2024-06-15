@@ -16,7 +16,6 @@ import gregtech.api.enums.Materials;
 import gregtech.api.interfaces.tileentity.ICoverable;
 import gregtech.api.interfaces.tileentity.ITurnable;
 import gregtech.api.metatileentity.BaseMetaPipeEntity;
-import gregtech.api.metatileentity.BaseTileEntity;
 import gregtech.api.objects.GT_ItemStack;
 import gregtech.api.util.GT_Log;
 import gregtech.api.util.GT_PlayedSound;
@@ -24,8 +23,25 @@ import gregtech.api.util.GT_Recipe;
 import gregtech.api.util.GT_Utility;
 import gregtech.common.entities.GT_Entity_Arrow;
 import gregtech.common.entities.GT_Entity_Arrow_Potion;
-import gregtech.common.render.*;
+import gregtech.common.render.GT_CapeRenderer;
+import gregtech.common.render.GT_FlaskRenderer;
+import gregtech.common.render.GT_FluidDisplayStackRenderer;
+import gregtech.common.render.GT_MachineRenderer;
+import gregtech.common.render.GT_MetaGenerated_Item_Renderer;
+import gregtech.common.render.GT_MetaGenerated_Tool_Renderer;
+import gregtech.common.render.GT_Renderer_Block;
+import gregtech.common.render.GT_Renderer_Entity_Arrow;
 import ic2.api.tile.IWrenchable;
+import ic2.core.item.ItemFluidCell;
+import ic2.core.item.resources.ItemCell;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -39,9 +55,6 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.event.terraingen.BiomeEvent;
 import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.opengl.GL11;
-
-import java.net.URL;
-import java.util.*;
 
 // Referenced classes of package gregtech.common:
 //            GT_Proxy
@@ -487,7 +500,9 @@ public class GT_Client extends GT_Proxy
             }
         }
 
-        if (GT_Utility.isStackInList(aEvent.currentItem, GregTech_API.sCovers.keySet()))
+        if (GT_Utility.isStackInList(aEvent.currentItem, GregTech_API.sCovers.keySet()) ||
+                (aEvent.currentItem != null && (aEvent.currentItem.getItem() instanceof ItemFluidCell || 
+                aEvent.currentItem.getItem() instanceof ItemCell)))
         {
             if (((ICoverable) aTileEntity).getCoverIDAtSide((byte) aEvent.target.sideHit) == 0)
                 drawGrid(aEvent, true);
