@@ -239,12 +239,18 @@ public class GT_MetaTileEntity_ElectricBlastFurnace extends GT_MetaTileEntity_Mu
             for (int j = -1; j < 2; j++) {
                 if ((xDir + i != 0) || (zDir + j != 0)) {
                     IGregTechTileEntity tTileEntity = aBaseMetaTileEntity.getIGregTechTileEntityOffset(xDir + i, 0, zDir + j);
-                    if ((!addMaintenanceToMachineList(tTileEntity, 11)) && (!addInputToMachineList(tTileEntity, 11)) && (!addOutputToMachineList(tTileEntity, 11)) && (!addEnergyInputToMachineList(tTileEntity, 11))) {
-                        if (aBaseMetaTileEntity.getBlockOffset(xDir + i, 0, zDir + j) != GregTech_API.sBlockCasings1) {
-                            return false;
-                        }
-                        if (aBaseMetaTileEntity.getMetaIDOffset(xDir + i, 0, zDir + j) != 11) {
-                            return false;
+                    if ((!addMaintenanceToMachineList(tTileEntity, 11)) && (!addInputToMachineList(tTileEntity, 11)) && (!addEnergyInputToMachineList(tTileEntity, 11))) {
+                        if (tTileEntity != null && tTileEntity.getMetaTileEntity() != null && tTileEntity.getMetaTileEntity() instanceof GT_MetaTileEntity_Hatch_OutputBus) {
+                            if (!addOutputToMachineList(tTileEntity, 11)) {
+                                return false;
+                            }
+                        } else {
+                            if (aBaseMetaTileEntity.getBlockOffset(xDir + i, 0, zDir + j) != GregTech_API.sBlockCasings1) {
+                                return false;
+                            }
+                            if (aBaseMetaTileEntity.getMetaIDOffset(xDir + i, 0, zDir + j) != 11) {
+                                return false;
+                            }
                         }
                     }
                 }
@@ -263,6 +269,7 @@ public class GT_MetaTileEntity_ElectricBlastFurnace extends GT_MetaTileEntity_Mu
                 }
             }
         }
+
         return true;
     }
 
@@ -330,7 +337,7 @@ public class GT_MetaTileEntity_ElectricBlastFurnace extends GT_MetaTileEntity_Mu
                 }
             }
             tLiquid.amount = tLiquid.amount * (pollutionReduction + 5) / 100;
-        } 
+        }
         if (!tryOutput(mOutputHatches, tLiquid, true)) {
             return tryOutput(mOutputHatches, tLiquid, false);
         }

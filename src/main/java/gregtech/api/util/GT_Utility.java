@@ -1,15 +1,20 @@
 package gregtech.api.util;
 
 import cofh.api.transport.IItemDuct;
+import com.mojang.authlib.GameProfile;
 import cpw.mods.fml.common.FMLCommonHandler;
 import gregtech.GT_Mod;
 import gregtech.api.GregTech_API;
 import gregtech.api.damagesources.GT_DamageSources;
 import gregtech.api.enchants.Enchantment_Radioactivity;
-import gregtech.api.enums.*;
+import gregtech.api.enums.ItemList;
+import gregtech.api.enums.Materials;
+import gregtech.api.enums.RelativeOffset;
+import gregtech.api.enums.SubTag;
+import gregtech.api.enums.Textures;
 import gregtech.api.interfaces.IProjectileItem;
 import gregtech.api.interfaces.ITexture;
-import gregtech.api.interfaces.tileentity.*;
+import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.items.GT_EnergyArmor_Item;
 import gregtech.api.items.GT_Generic_Item;
 import gregtech.api.net.GT_Packet_Sound;
@@ -21,12 +26,25 @@ import ic2.api.recipe.IRecipeInput;
 import ic2.api.recipe.RecipeInputItemStack;
 import ic2.api.recipe.RecipeInputOreDict;
 import ic2.api.recipe.RecipeOutput;
-import li.cil.oc.util.GameTimeFormatter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.util.Map.Entry;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -45,7 +63,13 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
-import net.minecraft.util.*;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.FoodStats;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -57,23 +81,21 @@ import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.fluids.*;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidContainerRegistry.FluidContainerData;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidContainerItem;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import com.mojang.authlib.GameProfile;
-
-import static gregtech.api.enums.GT_Values.*;
+import static gregtech.api.enums.GT_Values.D1;
+import static gregtech.api.enums.GT_Values.DW;
+import static gregtech.api.enums.GT_Values.E;
+import static gregtech.api.enums.GT_Values.GT;
+import static gregtech.api.enums.GT_Values.L;
+import static gregtech.api.enums.GT_Values.M;
+import static gregtech.api.enums.GT_Values.NW;
+import static gregtech.api.enums.GT_Values.V;
+import static gregtech.api.enums.GT_Values.W;
 
 /**
  * NEVER INCLUDE THIS FILE IN YOUR MOD!!!
@@ -2104,6 +2126,69 @@ public class GT_Utility {
         }
         return chPos;
     }
+    
+    public static Object getFrontRelativeOffsetBlock(IGregTechTileEntity te, RelativeOffset ro, int offset, int aY){
+        int x = 0, z = 0;
+        
+        if(ro == RelativeOffset.FORWARD || ro == RelativeOffset.BACK) { // 5 = x+; 4 = x-; 3 = z+; 2 = z-;
+            if(te.getFrontFacing() == 2 || te.getFrontFacing() == 3) {
+                offset = offset * (te.getFrontFacing() == 2 ? -1 : 1);
+                offset = offset * (ro == RelativeOffset.FORWARD ? 1 : -1);
+                z += offset;
+            } else {
+                offset = offset * (te.getFrontFacing() == 4 ? -1 : 1);
+                offset = offset * (ro == RelativeOffset.FORWARD ? 1 : -1);
+                x += offset;
+            }
+        } else {
+            if(te.getFrontFacing() == 2 || te.getFrontFacing() == 3) {
+                offset = offset * (te.getFrontFacing() == 2 ? -1 : 1);
+                offset = offset * (ro == RelativeOffset.RIGHT ? 1 : -1);
+                x += offset;
+            } else {
+                offset = offset * (te.getFrontFacing() == 4 ? -1 : 1);
+                offset = offset * (ro == RelativeOffset.LEFT ? 1 : -1);
+                z += offset;
+            }
+        }
+        IGregTechTileEntity res = te.getIGregTechTileEntityOffset(x , aY, z);
+        if (res != null) {
+            return res;
+        }
+        return te.getBlockOffset(x, aY, z);
+    }
+    
+    
+    public static GT_MetaBlock getFrontRelativeOffsetBackBlock(IGregTechTileEntity te, RelativeOffset ro, int offset, int backoffset, int aY){
+        int x = 0, z = 0;
+            if(te.getFrontFacing() == 2 || te.getFrontFacing() == 3) {
+                backoffset = backoffset * (te.getFrontFacing() == 2  ? -1 : 1);
+                backoffset = backoffset *  -1;
+                z += backoffset;
+            } else {
+                backoffset = backoffset * (te.getFrontFacing() == 4 ? -1 : 1);
+                backoffset = backoffset *  -1;
+                x += backoffset;
+            }
+        
+            if(te.getFrontFacing() == 2 || te.getFrontFacing() == 3) {
+                offset = offset * (te.getFrontFacing() == 2 ? -1 : 1);
+                offset = offset * (ro == RelativeOffset.RIGHT ? 1 : -1);
+                x += offset;
+            } else {
+                offset = offset * (te.getFrontFacing() == 4 ? -1 : 1);
+                offset = offset * (ro == RelativeOffset.LEFT ? 1 : -1);
+                z += offset;
+            }
+        
+        IGregTechTileEntity res = te.getIGregTechTileEntityOffset(x , aY, z);
+        if (res != null) {
+            return new GT_MetaBlock(res);
+        }
+        return new GT_MetaBlock(te.getMetaIDOffset(x, aY, z), te.getBlockOffset(x, aY, z));
+    }
+    
+    
 
     public static <T> void addAllToAll(Collection<T> toAdd, Collection<? extends Collection<T>> addTo) {
         addTo.forEach(collection -> collection.addAll(toAdd));
