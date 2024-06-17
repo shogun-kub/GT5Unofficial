@@ -945,8 +945,11 @@ public class GT_MetaGenerated_Item_01 extends GT_MetaGenerated_Item_X32 {
     }
     
     public boolean isCell(ItemStack is){
-        int metaId = is.getItemDamage();
-        OrePrefixes orePrefix = this.mGeneratedPrefixList[(metaId / 1000)];
+        int metaId = is.getItemDamage() / 1000;
+        if (metaId < 0 || metaId >= mGeneratedPrefixList.length){
+            return false;
+        }
+        OrePrefixes orePrefix = this.mGeneratedPrefixList[metaId];
         return orePrefix == OrePrefixes.cell || orePrefix == OrePrefixes.cellPlasma;
     }
 }

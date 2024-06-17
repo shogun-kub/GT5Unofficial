@@ -23,6 +23,7 @@ import gregtech.api.objects.ItemData;
 import gregtech.api.threads.GT_Runnable_Sound;
 import gregtech.common.items.GT_FluidDisplayItem;
 import gregtech.common.items.GT_MetaGenerated_Item_01;
+import gregtech.common.items.GT_VolumetricFlask;
 import ic2.api.recipe.IRecipeInput;
 import ic2.api.recipe.RecipeInputItemStack;
 import ic2.api.recipe.RecipeInputOreDict;
@@ -2631,7 +2632,7 @@ public class GT_Utility {
         if (is == null){
             return false;
         }
-        if (is.getItem() instanceof ItemCell || is.getItem() instanceof ItemFluidCell){
+        if (is.getItem() instanceof ItemCell || is.getItem() instanceof ItemFluidCell || is.getItem() instanceof GT_VolumetricFlask){
             return true;
         }
         if (is.getItem() instanceof GT_MetaGenerated_Item_01){
