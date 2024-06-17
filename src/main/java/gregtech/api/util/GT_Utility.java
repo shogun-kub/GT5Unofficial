@@ -22,10 +22,13 @@ import gregtech.api.objects.GT_ItemStack;
 import gregtech.api.objects.ItemData;
 import gregtech.api.threads.GT_Runnable_Sound;
 import gregtech.common.items.GT_FluidDisplayItem;
+import gregtech.common.items.GT_MetaGenerated_Item_01;
 import ic2.api.recipe.IRecipeInput;
 import ic2.api.recipe.RecipeInputItemStack;
 import ic2.api.recipe.RecipeInputOreDict;
 import ic2.api.recipe.RecipeOutput;
+import ic2.core.item.ItemFluidCell;
+import ic2.core.item.resources.ItemCell;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -2622,6 +2625,19 @@ public class GT_Utility {
                 return value;
             }
         };
+    }
+    
+    public static boolean isItemCell(ItemStack is){
+        if (is == null){
+            return false;
+        }
+        if (is.getItem() instanceof ItemCell || is.getItem() instanceof ItemFluidCell){
+            return true;
+        }
+        if (is.getItem() instanceof GT_MetaGenerated_Item_01){
+            return ((GT_MetaGenerated_Item_01) is.getItem()).isCell(is);
+        }
+        return false;
     }
 
 }

@@ -14,8 +14,6 @@ import gregtech.api.util.GT_Log;
 import gregtech.api.util.GT_ModHandler;
 import gregtech.api.util.GT_OreDictUnificator;
 import gregtech.api.util.GT_Utility;
-import ic2.core.item.ItemFluidCell;
-import ic2.core.item.resources.ItemCell;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -1070,7 +1068,7 @@ public class BaseMetaPipeEntity extends BaseTileEntity implements IGregTechTileE
                         return true;
                     }
                 }
-                if (tCurrentItem.getItem() instanceof ItemCell || tCurrentItem.getItem() instanceof ItemFluidCell) {
+                if (GT_Utility.isItemCell(tCurrentItem)) {
                     aSide = (getCoverIDAtSide(aSide) == 0) ? GT_Utility.determineWrenchingSide(aSide, aX, aY, aZ) : aSide;
                     return getCoverIDAtSide(aSide) > 0 && getCoverBehaviorAtSide(aSide).onCoverRightclick(aSide, getCoverIDAtSide(aSide), getCoverDataAtSide(aSide), this, aPlayer, aX, aY, aZ);
                 }

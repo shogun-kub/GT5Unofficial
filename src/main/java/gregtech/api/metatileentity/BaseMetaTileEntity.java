@@ -25,8 +25,6 @@ import gregtech.api.util.GT_Recipe;
 import gregtech.api.util.GT_Utility;
 import gregtech.common.GT_Pollution;
 import ic2.api.Direction;
-import ic2.core.item.ItemFluidCell;
-import ic2.core.item.resources.ItemCell;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1604,7 +1602,7 @@ public class BaseMetaTileEntity extends BaseTileEntity implements IGregTechTileE
                             return true;
                         }
                     } 
-                    if (tCurrentItem.getItem() instanceof ItemCell || tCurrentItem.getItem() instanceof ItemFluidCell){
+                    if (GT_Utility.isItemCell(tCurrentItem)){
                         aSide = (getCoverIDAtSide(aSide) == 0) ? GT_Utility.determineWrenchingSide(aSide, aX, aY, aZ) : aSide;
                         return getCoverIDAtSide(aSide) > 0 && getCoverBehaviorAtSide(aSide).onCoverRightclick(aSide, getCoverIDAtSide(aSide), getCoverDataAtSide(aSide), this, aPlayer, aX, aY, aZ);
                     }
