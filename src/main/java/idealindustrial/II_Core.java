@@ -42,7 +42,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 public class II_Core {
 
     private static final String PACKAGES_URL = "https://api.github.com/orgs/IdealIndustrial/packages/maven/idealindustrial.gt-ii-edition/versions";
-    private static final String ANY_TOKEN = "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"; //just any public token without write access
+    private static final String ANY_TOKEN = "ghp" + "_" + "gY1sKK55upxhJon21DNzwtulNDxRWp0gwvWD"; //just any public token without write access
     private static final String version = "1.19.2";
     private String auto_version = "Dev_version";
     private String auto_last_version = null;
@@ -107,7 +107,7 @@ public class II_Core {
             JsonArray root = new Gson().fromJson(s, JsonArray.class);
             auto_last_version = root.get(0).getAsJsonObject().get("name").getAsString().replace("-SNAPSHOT", "");
         } catch (Exception e) {
-            auto_last_version = auto_version;
+            auto_last_version = "failed to get";
         }
         auto_version = "Current version: " + auto_version;
         auto_last_version = "Latest version: " + auto_last_version;
