@@ -110,6 +110,11 @@ dependencies {
 
 processResources
 {
+	def propertiesFile = file "src/main/resources/version.properties"
+	def properties = new Properties()
+	properties.setProperty("version", project.version)
+	propertiesFile.withWriter { properties.store(it, null) }
+		
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
