@@ -1,7 +1,6 @@
 package idealindustrial;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
+import com.google.common.io.ByteStreams;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
@@ -22,7 +21,10 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.crash.CrashReport;
@@ -32,20 +34,21 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 @Mod(modid = "iicore", name = "II_Core", version = "MC1710", useMetadata = false, dependencies = "after:gregtech")
 public class II_Core {
 
-    private static final String PACKAGES_URL = "https://api.github.com/orgs/IdealIndustrial/packages/maven/idealindustrial.gt-ii-edition/versions";
-    private static final String ANY_TOKEN = "ghp" + "_" + "gY1sKK55upxhJon21DNzwtulNDxRWp0gwvWD"; //just any public token without write access
+    private static final String PACKAGES_URL = "https://github.com/IdealIndustrial/GT5Unofficial/packages/2134484";
+    private static final Pattern PARSE_PATTERN = Pattern.compile("gt-ii-edition-(.*?)-.*?-(\\d+).jar", Pattern.MULTILINE);
+    private static final String PROPERTY_VERSION_URL = "/version.properties";
+    
     private static final String version = "1.19.2";
-    private String auto_version = "Dev_version";
+    private String auto_version = "??";
+    private String auto_build = "??";
     private String auto_last_version = null;
+    private String auto_last_build = null;
+    private String first_line = "Current version: %1$s-%2$s";
+    private String second_line = "Latest dev build: %1$s-%2$s";
 
     public II_Core() {
         FMLCommonHandler.instance().bus().register(this);
@@ -89,36 +92,65 @@ public class II_Core {
         if (auto_last_version != null || !(event.gui instanceof net.minecraft.client.gui.GuiMainMenu || event.gui.getClass().getSimpleName().equals("GuiCustom"))) {
             return;
         }
+        getCurrentFileVersion();
+        getLatestBuild();
 
+        first_line = String.format(first_line, auto_version, auto_build);
+        second_line = String.format(second_line, auto_last_version, auto_last_build);
+    }
+
+    private void getLatestBuild() {
+        try {
+            URL url = new URL(PACKAGES_URL);
+            InputStream con = url.openStream();
+            String pageText = new String(ByteStreams.toByteArray(con));
+            con.close();
+            Matcher m = PARSE_PATTERN.matcher(pageText);
+            if (m.find()) {
+                if (m.groupCount() == 2) {
+                    auto_last_version = m.group(1);
+                    auto_last_build = m.group(2);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void getCurrentFileVersion() {
         try {
             Properties p = new Properties();
-            InputStream is = getClass().getResourceAsStream("/version.properties");
+            InputStream is = getClass().getResourceAsStream(PROPERTY_VERSION_URL);
             if (is != null) {
                 p.load(is);
+                is.close();
                 auto_version = p.getProperty("version", auto_version).replace("-SNAPSHOT", "");
+                String filename = getClass().getResource(PROPERTY_VERSION_URL).getFile();
+                if (filename != null) {
+                    Matcher m = PARSE_PATTERN.matcher(filename);
+                    if (m.find()) {
+                        if (m.groupCount() == 2) {
+                            auto_version = m.group(1);
+                            auto_build = m.group(2);
+                        }
+                    }
+                }
+            } else {
+                //dev build
+                auto_version = "dev";
+                auto_build = "dev";
             }
-
-            //get the latest vesrion from github:
-            HttpGet get = new HttpGet(PACKAGES_URL);
-            HttpClient client = new DefaultHttpClient();
-            get.setHeader("Authorization", "Bearer " + ANY_TOKEN);
-            HttpResponse response = client.execute(get);
-            String s = IOUtils.toString(response.getEntity().getContent());
-            JsonArray root = new Gson().fromJson(s, JsonArray.class);
-            auto_last_version = root.get(0).getAsJsonObject().get("name").getAsString().replace("-SNAPSHOT", "");
         } catch (Exception e) {
-            auto_last_version = "failed to get";
+            e.printStackTrace();
         }
-        auto_version = "Current version: " + auto_version;
-        auto_last_version = "Latest version: " + auto_last_version;
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public void renderScreenPost(GuiScreenEvent.DrawScreenEvent.Post event) throws IOException {
         if (event.gui instanceof net.minecraft.client.gui.GuiMainMenu || event.gui.getClass().getSimpleName().equals("GuiCustom")) {
             FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
-            event.gui.drawString(fr, auto_version, event.gui.width - fr.getStringWidth(auto_version), 0, Color.ORANGE.getRGB());
-            event.gui.drawString(fr, auto_last_version, event.gui.width - fr.getStringWidth(auto_last_version), fr.FONT_HEIGHT + 2, Color.ORANGE.getRGB());
+            event.gui.drawString(fr, first_line, event.gui.width - fr.getStringWidth(first_line) - 1, 0, Color.ORANGE.getRGB());
+            event.gui.drawString(fr, second_line, event.gui.width - fr.getStringWidth(second_line)- 1, fr.FONT_HEIGHT + 1, Color.ORANGE.getRGB());
         }
     }
 
@@ -152,7 +184,6 @@ public class II_Core {
         aEvent.registerServerCommand(new CommandFixQuests());
         aEvent.registerServerCommand(new DimTPCommand());
         aEvent.registerServerCommand(new ReloadRecipesCommand());
-
         //  aEvent.registerServerCommand(new CommandFixMaterials());
     }
 
