@@ -293,7 +293,7 @@ public class GT_MetaTileEntity_AssemblyLine extends GT_MetaTileEntity_MultiBlock
         }
         int topLeftOffset = checkRow;
         //checking blocks to the right
-        for (int i = 1; i < maxrowlength - checkRow; i++) {
+        for (int i = 1; i < maxrowlength - topLeftOffset; i++) {
             if (!validateControllerLayerBlocks(GT_Utility.getFrontRelativeOffsetBackBlock(cBase, RelativeOffset.RIGHT, i, 0, 0))) {
                 break;  //found wrong block
             }
